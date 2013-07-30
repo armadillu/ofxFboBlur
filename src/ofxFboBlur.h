@@ -171,7 +171,6 @@ private:
 			ofClear(0, 0, 0, 0);
 			input->draw(0, 0);
 			output->end();
-
 		}
 	}
 
