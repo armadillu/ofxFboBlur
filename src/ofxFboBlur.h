@@ -106,13 +106,21 @@ public:
 	}
 
 	void drawSceneFBO(){
+#if (OF_VERSION_MINOR >= 8)
+		cleanImgFBO.getTextureReference().draw(0, 0, cleanImgFBO.getWidth(), cleanImgFBO.getHeight());
+#else
 		cleanImgFBO.getTextureReference().draw(0, cleanImgFBO.getHeight(), cleanImgFBO.getWidth(), -cleanImgFBO.getHeight());
+#endif
 	}
 
 	void drawBlurFbo(){
 		ofSetColor(blurOverlayGain);
 		for(int i = 0; i < numBlurOverlays; i++){
+			#if (OF_VERSION_MINOR >= 8)
+			blurOutputFBO.getTextureReference().draw(0, 0, blurOutputFBO.getWidth(), blurOutputFBO.getHeight());
+			#else
 			blurOutputFBO.getTextureReference().draw(0, blurOutputFBO.getHeight(), blurOutputFBO.getWidth(), -blurOutputFBO.getHeight());
+			#endif
 		}
 	}
 
