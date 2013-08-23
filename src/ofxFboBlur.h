@@ -89,8 +89,10 @@ public:
 		blurTempFBO.allocate( s );
 		blurTempFBO2.allocate( s );
 
-		//shaderV.load("shaders/blur.vert", "shaders/blurV.frag");
-		//shaderH.load("shaders/blur.vert", "shaders/blurH.frag");
+		blurOffset = 1.0;
+		blurPasses = 2;;
+		numBlurOverlays = 1;
+		blurOverlayGain = 255;
 	}
 
 	void beginDrawScene(){
@@ -127,8 +129,8 @@ public:
 	//access direclty please!
 	float blurOffset;
 	int blurPasses;
-	int numBlurOverlays;
-	int blurOverlayGain;
+	int numBlurOverlays;	
+	int blurOverlayGain;	//[0..255]
 
 private:
 
