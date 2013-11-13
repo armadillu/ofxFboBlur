@@ -15,7 +15,9 @@ class ofxFboBlur{
 
 public:
 	
-	void setup(ofFbo::Settings s){
+	void setup(ofFbo::Settings s, bool additive){
+
+		backgroundColor = ofColor(0,0,0,0);
 
 		string fragV = "#extension GL_ARB_texture_rectangle : enable\n" + (string)
 		STRINGIFY(
@@ -36,8 +38,11 @@ public:
 				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 2.0 * blurSize)) * 0.12;
 				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 3.0 * blurSize)) * 0.09;
 				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 4.0 * blurSize)) * 0.05;
-				 
-				 if (sum.a > 0.0) sum.a = 1.0;
+		);
+
+		if(additive) fragV += STRINGIFY( if (sum.a > 0.0) sum.a = 1.0; );
+
+		fragV += STRINGIFY(
 				 gl_FragColor = sum;
 			 }
 		);
@@ -63,7 +68,11 @@ public:
 					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x + 3.0 * blurSize, gl_TexCoord[0].y)) * 0.09;
 					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x + 4.0 * blurSize, gl_TexCoord[0].y)) * 0.05;
 					  
-					  if (sum.a > 0.0) sum.a = 1.0;
+					);
+
+		if(additive) fragH += STRINGIFY( if (sum.a > 0.0) sum.a = 1.0; );
+
+		fragH += STRINGIFY(
 					  gl_FragColor = sum;
 				  }
 		);
@@ -115,8 +124,8 @@ public:
 #endif
 	}
 
-	void drawBlurFbo(){
-		ofSetColor(blurOverlayGain);
+	void drawBlurFbo(bool useCurrentColor = false){
+		if(!useCurrentColor) ofSetColor(blurOverlayGain);
 		for(int i = 0; i < numBlurOverlays; i++){
 			#if (OF_VERSION_MINOR >= 8)
 			blurOutputFBO.getTextureReference().draw(0, 0, blurOutputFBO.getWidth(), blurOutputFBO.getHeight());
@@ -124,6 +133,10 @@ public:
 			blurOutputFBO.getTextureReference().draw(0, blurOutputFBO.getHeight(), blurOutputFBO.getWidth(), -blurOutputFBO.getHeight());
 			#endif
 		}
+	}
+
+	void setBackgroundColor(ofColor c){
+		backgroundColor = c;
 	}
 
 	//access direclty please!
@@ -139,11 +152,11 @@ private:
 		if( iterations > 0 ){
 
 			buffer->begin();
-			ofClear(0, 0, 0, 0);
+			ofClear(backgroundColor);
 			buffer->end();
 
 			buffer2->begin();
-			ofClear(0, 0, 0, 0);
+			ofClear(backgroundColor);
 			buffer2->end();
 
 			ofEnableAlphaBlending();
@@ -172,13 +185,13 @@ private:
 			//draw back into original fbo
 
 			output->begin();
-			ofClear(0, 0, 0, 0);
+			ofClear(backgroundColor);
 			buffer2->draw(0, 0);
 			output->end();
 
 		}else{
 			output->begin();
-			ofClear(0, 0, 0, 0);
+			ofClear(backgroundColor);
 			input->draw(0, 0);
 			output->end();
 		}
@@ -192,4 +205,6 @@ private:
 
 	ofShader shaderV;
 	ofShader shaderH;
+
+	ofColor backgroundColor;
 };

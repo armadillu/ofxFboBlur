@@ -15,7 +15,8 @@ void testApp::setup(){
 	s.useDepth = true;
 	s.useStencil = false;
 
-	gpuBlur.setup(s);
+	gpuBlur.setup(s, true);
+	gpuBlur.setBackgroundColor(ofColor(0,0));
 
 }
 
