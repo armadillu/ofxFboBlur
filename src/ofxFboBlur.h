@@ -99,7 +99,7 @@ public:
 		blurTempFBO2.allocate( s );
 
 		blurOffset = 1.0;
-		blurPasses = 2;;
+		blurPasses = 2;
 		numBlurOverlays = 1;
 		blurOverlayGain = 255;
 	}
@@ -196,7 +196,6 @@ private:
 			output->end();
 		}
 	}
-
 
 	ofFbo	cleanImgFBO;
 	ofFbo	blurOutputFBO;

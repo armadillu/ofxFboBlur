@@ -8,11 +8,11 @@ void testApp::setup(){
 	s.width = ofGetWidth();
 	s.height = ofGetHeight();
 	s.internalformat = GL_RGBA;
-	//	s.textureTarget = GL_TEXTURE_RECTANGLE_ARB;
+	s.textureTarget = GL_TEXTURE_RECTANGLE_ARB;
 	s.maxFilter = GL_LINEAR; GL_NEAREST;
 	s.numSamples = 4;
 	s.numColorbuffers = 3;
-	s.useDepth = true;
+	s.useDepth = false;
 	s.useStencil = false;
 
 	gpuBlur.setup(s, true);
