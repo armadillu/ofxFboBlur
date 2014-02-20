@@ -26,7 +26,7 @@ public:
 
 			 void main(void){
 
-				 float blurSize = blurLevel ;
+				 float blurSize = blurLevel;
 				 vec4 sum = vec4(0.0);
 
 				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 4.0 * blurSize)) * 0.05;
@@ -56,7 +56,6 @@ public:
 
 					  float blurSize = blurLevel;
 					  vec4 sum = vec4(0.0);
-					  vec2 st = gl_TexCoord[0].st;
 
 					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x - 4.0 * blurSize, gl_TexCoord[0].y)) * 0.05;
 					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x - 3.0 * blurSize, gl_TexCoord[0].y)) * 0.09;
