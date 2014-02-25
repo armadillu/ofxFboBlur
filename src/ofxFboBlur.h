@@ -15,8 +15,9 @@ class ofxFboBlur{
 
 public:
 	
-	void setup(ofFbo::Settings s, bool additive){
+	void setup(ofFbo::Settings s, bool additive, float scaleDownPercent = 1.0f){
 
+		scaleDown = scaleDownPercent;
 		backgroundColor = ofColor(0,0,0,0);
 
 		string fragV = "#extension GL_ARB_texture_rectangle : enable\n" + (string)
@@ -94,8 +95,8 @@ public:
 
 		cleanImgFBO.allocate( s );
 
-					  s.width *= scaleDown;
-					  s.height *= scaleDown;
+		s.width *= scaleDown;
+		s.height *= scaleDown;
 
 		blurOutputFBO.allocate( s );
 		blurTempFBO.allocate( s );
@@ -147,9 +148,11 @@ public:
 	int blurPasses;
 	int numBlurOverlays;	
 	int blurOverlayGain;	//[0..255]
-	float scaleDown;
+
 
 private:
+
+	float scaleDown;
 
 	void blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * buffer2, int iterations, float blurOffset  ){
 
