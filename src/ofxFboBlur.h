@@ -93,6 +93,10 @@ public:
 		shaderH.linkProgram();
 
 		cleanImgFBO.allocate( s );
+
+					  s.width *= scaleDown;
+					  s.height *= scaleDown;
+
 		blurOutputFBO.allocate( s );
 		blurTempFBO.allocate( s );
 		blurTempFBO2.allocate( s );
@@ -127,9 +131,9 @@ public:
 		if(!useCurrentColor) ofSetColor(blurOverlayGain);
 		for(int i = 0; i < numBlurOverlays; i++){
 			#if (OF_VERSION_MINOR >= 8)
-			blurOutputFBO.getTextureReference().draw(0, 0, blurOutputFBO.getWidth(), blurOutputFBO.getHeight());
+			blurOutputFBO.getTextureReference().draw(0, 0, blurOutputFBO.getWidth() / scaleDown, blurOutputFBO.getHeight() / scaleDown);
 			#else
-			blurOutputFBO.getTextureReference().draw(0, blurOutputFBO.getHeight(), blurOutputFBO.getWidth(), -blurOutputFBO.getHeight());
+			blurOutputFBO.getTextureReference().draw(0, blurOutputFBO.getHeight(), blurOutputFBO.getWidth() / scaleDown, -blurOutputFBO.getHeight() / scaleDown);
 			#endif
 		}
 	}
@@ -138,11 +142,12 @@ public:
 		backgroundColor = c;
 	}
 
-	//access direclty please!
+	//access directly please!
 	float blurOffset;
 	int blurPasses;
 	int numBlurOverlays;	
 	int blurOverlayGain;	//[0..255]
+	float scaleDown;
 
 private:
 
@@ -162,23 +167,27 @@ private:
 			for (int i = 0; i < iterations; i++) {
 
 				buffer->begin();
-				shaderV.begin();
-				if (i == 0){ //for first pass, we use input as src; after that, we retro-feed the output of the 1st pass
-					shaderV.setUniformTexture( "texture", input->getTextureReference(), 0 );
-				}else{
-					shaderV.setUniformTexture( "texture", buffer2->getTextureReference(), 1 );
-				}
-				shaderV.setUniform1f("blurLevel", blurOffset * (i + 1) );
-				input->draw(0,0);
-				shaderV.end();
+					shaderV.begin();
+					if (i == 0){ //for first pass, we use input as src; after that, we retro-feed the output of the 1st pass
+						shaderV.setUniformTexture( "texture", input->getTextureReference(), 0 );
+					}else{
+						shaderV.setUniformTexture( "texture", buffer2->getTextureReference(), 1 );
+					}
+					shaderV.setUniform1f("blurLevel", blurOffset * (i + 1) );
+					if (i == 0){
+						input->draw(0,0, buffer->getWidth(), buffer->getHeight());
+					}else{
+						input->draw(0,0);
+					}
+					shaderV.end();
 				buffer->end();
 
 				buffer2->begin();
-				shaderH.begin();
-				shaderH.setUniformTexture( "texture", buffer->getTextureReference(), 2 );
-				shaderH.setUniform1f("blurLevel", blurOffset * (i + 1) );
-				buffer->draw(0,0);
-				shaderH.end();
+					shaderH.begin();
+					shaderH.setUniformTexture( "texture", buffer->getTextureReference(), 2 );
+					shaderH.setUniform1f("blurLevel", blurOffset * (i + 1) );
+					buffer->draw(0,0);
+					shaderH.end();
 				buffer2->end();
 			}
 			//draw back into original fbo
@@ -191,7 +200,7 @@ private:
 		}else{
 			output->begin();
 			ofClear(backgroundColor);
-			input->draw(0, 0);
+			input->draw(0,0, buffer->getWidth(), buffer->getHeight());
 			output->end();
 		}
 	}
