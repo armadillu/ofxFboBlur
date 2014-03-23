@@ -102,10 +102,10 @@ public:
 		blurTempFBO.allocate( s );
 		blurTempFBO2.allocate( s );
 
-		blurOffset = 1.0;
-		blurPasses = 2;
+		blurOffset = 0.5;
+		blurPasses = 1;
 		numBlurOverlays = 1;
-		blurOverlayGain = 255;
+		blurOverlayGain = 128;
 	}
 
 	void beginDrawScene(){
