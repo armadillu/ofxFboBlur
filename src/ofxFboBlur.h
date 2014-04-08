@@ -8,12 +8,20 @@
  */
 
 #include "ofMain.h"
+#pragma once
 
 #define STRINGIFY(A) #A
 
 class ofxFboBlur{
 
 public:
+
+	ofxFboBlur(){
+		blurOffset = 0.5;
+		blurPasses = 1;
+		numBlurOverlays = 1;
+		blurOverlayGain = 128;
+	}
 	
 	void setup(ofFbo::Settings s, bool additive, float scaleDownPercent = 1.0f){
 
@@ -102,10 +110,6 @@ public:
 		blurTempFBO.allocate( s );
 		blurTempFBO2.allocate( s );
 
-		blurOffset = 0.5;
-		blurPasses = 1;
-		numBlurOverlays = 1;
-		blurOverlayGain = 128;
 	}
 
 	void beginDrawScene(){
