@@ -176,11 +176,11 @@ private:
 				buffer->begin();
 					shaderV.begin();
 					if (i == 0){ //for first pass, we use input as src; after that, we retro-feed the output of the 1st pass
-						shaderV.setUniformTexture( "texture", input->getTextureReference(), 0 );
+						shaderV.setUniformTexture( "texture", input->getTextureReference(), input->getTextureReference().texData.textureID );
 					}else{
-						shaderV.setUniformTexture( "texture", buffer2->getTextureReference(), 1 );
+						shaderV.setUniformTexture( "texture", buffer2->getTextureReference(), input->getTextureReference().texData.textureID );
 					}
-					shaderV.setUniform1f("blurLevel", blurOffset * (i + 1) );
+					shaderV.setUniform1f("blurLevel", blurOffset * (i + 1) / (iterations * iterations + 1));
 					if (i == 0){
 						input->draw(0,0, buffer->getWidth(), buffer->getHeight());
 					}else{
@@ -191,8 +191,8 @@ private:
 
 				buffer2->begin();
 					shaderH.begin();
-					shaderH.setUniformTexture( "texture", buffer->getTextureReference(), 2 );
-					shaderH.setUniform1f("blurLevel", blurOffset * (i + 1) );
+					shaderH.setUniformTexture( "texture", buffer->getTextureReference(), input->getTextureReference().texData.textureID );
+					shaderH.setUniform1f("blurLevel", blurOffset * (i + 1) / (iterations * iterations + 1));
 					buffer->draw(0,0);
 					shaderH.end();
 				buffer2->end();
