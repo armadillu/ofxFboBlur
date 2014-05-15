@@ -101,6 +101,9 @@ public:
 		shaderH.setupShaderFromSource(GL_FRAGMENT_SHADER, fragH);
 		shaderH.linkProgram();
 
+
+		ofLogLevel l = ofGetLogLevel();
+		ofSetLogLevel(OF_LOG_WARNING);
 		cleanImgFBO.allocate( s );
 
 		s.width *= scaleDown;
@@ -109,7 +112,7 @@ public:
 		blurOutputFBO.allocate( s );
 		blurTempFBO.allocate( s );
 		blurTempFBO2.allocate( s );
-
+		ofSetLogLevel(l);
 	}
 
 	void beginDrawScene(){
