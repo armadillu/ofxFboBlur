@@ -95,11 +95,11 @@ public:
 
 		shaderV.setupShaderFromSource(GL_VERTEX_SHADER, vertex);
 		shaderV.setupShaderFromSource(GL_FRAGMENT_SHADER, fragV);
-		shaderV.linkProgram();
+		bool ok = shaderV.linkProgram();
 		
 		shaderH.setupShaderFromSource(GL_VERTEX_SHADER, vertex);
 		shaderH.setupShaderFromSource(GL_FRAGMENT_SHADER, fragH);
-		shaderH.linkProgram();
+		ok = shaderH.linkProgram();
 
 
 		ofLogLevel l = ofGetLogLevel();
@@ -157,7 +157,7 @@ public:
 	int blurOverlayGain;	//[0..255]
 
 
-private:
+//private:
 
 	float scaleDown;
 
@@ -179,9 +179,9 @@ private:
 				buffer->begin();
 					shaderV.begin();
 					if (i == 0){ //for first pass, we use input as src; after that, we retro-feed the output of the 1st pass
-						shaderV.setUniformTexture( "texture", input->getTextureReference(), input->getTextureReference().texData.textureID );
+						shaderV.setUniformTexture( "texture", input->getTextureReference(), 0 );
 					}else{
-						shaderV.setUniformTexture( "texture", buffer2->getTextureReference(), input->getTextureReference().texData.textureID );
+						shaderV.setUniformTexture( "texture", buffer2->getTextureReference(), 0 );
 					}
 					shaderV.setUniform1f("blurLevel", blurOffset * (i + 1) / (iterations * iterations + 1));
 					if (i == 0){
@@ -194,7 +194,7 @@ private:
 
 				buffer2->begin();
 					shaderH.begin();
-					shaderH.setUniformTexture( "texture", buffer->getTextureReference(), input->getTextureReference().texData.textureID );
+					shaderH.setUniformTexture( "texture", buffer->getTextureReference(), 0 );
 					shaderH.setUniform1f("blurLevel", blurOffset * (i + 1) / (iterations * iterations + 1));
 					buffer->draw(0,0);
 					shaderH.end();
