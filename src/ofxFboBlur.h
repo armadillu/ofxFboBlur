@@ -156,8 +156,10 @@ public:
 	int numBlurOverlays;	
 	int blurOverlayGain;	//[0..255]
 
+	ofFbo &getSceneFbo(){return cleanImgFBO;};
+	ofFbo &getBlurredSceneFbo(){return blurOutputFBO;};
 
-//private:
+private:
 
 	float scaleDown;
 
