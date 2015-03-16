@@ -15,16 +15,19 @@ void testApp::setup(){
 	s.useDepth = false;
 	s.useStencil = false;
 
-	gpuBlur.setup(s, true);
+	gpuBlur.setup(s, false);
 	gpuBlur.setBackgroundColor(ofColor(0,0));
+
+	ofLoadImage(tex, "zoidberg.png");
 
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
 
-	gpuBlur.blurOffset = 5 * ofMap(mouseY, 0, ofGetHeight(), 1, 0, true);
-	gpuBlur.blurPasses = 10. * ofMap(mouseX, 0, ofGetWidth(), 0, 1, true);
+	gpuBlur.blurOffset = 100 * ofMap(mouseY, 0, ofGetHeight(), 1, 0, true);
+	gpuBlur.blurOffset = 15;
+	gpuBlur.blurPasses = 50 * ofMap(mouseX, 0, ofGetWidth(), 0, 1, true);
 	gpuBlur.numBlurOverlays = 1;
 	gpuBlur.blurOverlayGain = 255;
 
@@ -38,17 +41,18 @@ void testApp::draw(){
 	gpuBlur.beginDrawScene();
 		ofClear(0, 0, 0, 0);
 		ofCircle(ofGetWidth()/2, ofGetHeight()/2,  100);
+		tex.draw(0,0);
 	gpuBlur.endDrawScene();
 
 	//blur the fbo
 	gpuBlur.performBlur();
 
 	//draw the "clean" scene
-	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-	gpuBlur.drawSceneFBO();
+	//ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+	//gpuBlur.drawSceneFBO();
 
 	//overlay the blur on top
-	ofEnableBlendMode(OF_BLENDMODE_ADD);
+	//ofEnableBlendMode(OF_BLENDMODE_ADD);
 	gpuBlur.drawBlurFbo();
 
 	//draw info
