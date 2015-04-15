@@ -11,7 +11,7 @@ void testApp::setup(){
 	s.textureTarget = GL_TEXTURE_RECTANGLE_ARB;
 	s.maxFilter = GL_LINEAR; GL_NEAREST;
 	s.numSamples = 4;
-	s.numColorbuffers = 3;
+	s.numColorbuffers = 1;
 	s.useDepth = false;
 	s.useStencil = false;
 
