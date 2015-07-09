@@ -136,7 +136,7 @@ public:
 	}
 
 	void drawBlurFbo(bool useCurrentColor = false){
-		if(!useCurrentColor) ofSetColor(blurOverlayGain);
+		if(useCurrentColor) ofSetColor(blurOverlayGain);
 		for(int i = 0; i < numBlurOverlays; i++){
 			#if (OF_VERSION_MINOR >= 8)
 			blurOutputFBO.getTextureReference().draw(0, 0, blurOutputFBO.getWidth() / scaleDown, blurOutputFBO.getHeight() / scaleDown);
