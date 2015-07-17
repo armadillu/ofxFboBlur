@@ -114,6 +114,7 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 
 	ofLogLevel l = ofGetLogLevel();
 	ofSetLogLevel(OF_LOG_WARNING);
+
 	cleanImgFBO.allocate( s );
 
 	s.width *= scaleDown;
@@ -173,31 +174,26 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 
 		buffer2->begin();
 		ofClear(backgroundColor);
+		input->draw(0,0, buffer2->getWidth(), buffer2->getHeight());
 		buffer2->end();
 
 		ofEnableAlphaBlending();
 		for (int i = 0; i < iterations; i++) {
 
+			float blurLevel = blurOffset * (i + 1) / ( iterations * iterations + 1);
+
 			buffer->begin();
 				sv->begin();
-				if (i == 0){ //for first pass, we use input as src; after that, we retro-feed the output of the 1st pass
-					sv->setUniformTexture( "texture", input->getTextureReference(), 0 );
-				}else{
-					sv->setUniformTexture( "texture", buffer2->getTextureReference(), 0 );
-				}
-				sv->setUniform1f("blurLevel", blurOffset * (i + 1) / ( iterations * iterations + 1));
-				if (i == 0){
-					input->draw(0,0, buffer->getWidth(), buffer->getHeight());
-				}else{
-					buffer2->draw(0,0);
-				}
+				sv->setUniformTexture( "texture", input->getTextureReference(), 0 );
+				sv->setUniform1f("blurLevel", blurLevel);
+				buffer2->draw(0,0);
 				sv->end();
 			buffer->end();
 
 			buffer2->begin();
 				sh->begin();
 				sh->setUniformTexture( "texture", buffer->getTextureReference(), 0 );
-				sh->setUniform1f("blurLevel", blurOffset * (i + 1) / ( iterations * iterations + 1));
+				sh->setUniform1f("blurLevel", blurLevel);
 				buffer->draw(0,0);
 				sh->end();
 			buffer2->end();
@@ -212,7 +208,7 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 	}else{
 		output->begin();
 		ofClear(backgroundColor);
-		input->draw(0,0, buffer->getWidth(), buffer->getHeight());
+		input->draw(0,0, output->getWidth(), output->getHeight());
 		output->end();
 	}
 }
