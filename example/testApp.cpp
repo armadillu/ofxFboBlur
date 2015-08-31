@@ -10,14 +10,12 @@ void testApp::setup(){
 	s.internalformat = GL_RGBA;
 	s.textureTarget = GL_TEXTURE_RECTANGLE_ARB;
 	s.maxFilter = GL_LINEAR; GL_NEAREST;
-	s.numSamples = 4;
+	s.numSamples = 0;
 	s.numColorbuffers = 1;
 	s.useDepth = false;
 	s.useStencil = false;
 
 	gpuBlur.setup(s, false);
-	gpuBlur.setBackgroundColor(ofColor(0,0));
-
 	ofLoadImage(tex, "zoidberg.png");
 
 }
@@ -26,8 +24,9 @@ void testApp::setup(){
 void testApp::update(){
 
 	gpuBlur.blurOffset = 100 * ofMap(mouseY, 0, ofGetHeight(), 1, 0, true);
-	gpuBlur.blurOffset = 15;
+	//gpuBlur.blurOffset = 15;
 	gpuBlur.blurPasses = 50 * ofMap(mouseX, 0, ofGetWidth(), 0, 1, true);
+	//gpuBlur.blurPasses = 1;
 	gpuBlur.numBlurOverlays = 1;
 	gpuBlur.blurOverlayGain = 255;
 
@@ -36,15 +35,17 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
 
-	ofSetColor(255);
+	ofBackgroundGradient(ofColor::green, ofColor::red);
 	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 	gpuBlur.beginDrawScene();
 		ofClear(0, 0, 0, 0);
+		ofSetColor(255);
 		ofCircle(ofGetWidth()/2, ofGetHeight()/2,  100);
 		tex.draw(0,0);
 	gpuBlur.endDrawScene();
 
 	//blur the fbo
+	//blending will be disabled at this stage
 	gpuBlur.performBlur();
 
 	//draw the "clean" scene
@@ -52,8 +53,9 @@ void testApp::draw(){
 	//gpuBlur.drawSceneFBO();
 
 	//overlay the blur on top
-	//ofEnableBlendMode(OF_BLENDMODE_ADD);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); //pre-multiplied alpha
 	gpuBlur.drawBlurFbo();
+	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 
 	//draw info
 	string info =	"blurOffset: " + ofToString(gpuBlur.blurOffset) + "\n" +
@@ -68,6 +70,12 @@ void testApp::draw(){
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
+
+	ofTexture shadowTexture = gpuBlur.getBlurredSceneFbo().getTexture();
+	ofPixels pixels;
+	shadowTexture.readToPixels(pixels);
+	ofSaveImage(pixels, "shadow.tga");
+
 
 }
 

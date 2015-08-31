@@ -25,7 +25,6 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 
 	scaleDown = scaleDownPercent;
 	this->additive = additive;
-	backgroundColor = ofColor(0,0,0,0);
 
 	if( (!shaderV.isLoaded() && !additive) || (additive && !shaderVadd.isLoaded()) ){
 		string fragV = "#extension GL_ARB_texture_rectangle : enable\n" + (string)
@@ -52,7 +51,8 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 		if(additive) fragV += STRINGIFY( if (sum.a > 0.0) sum.a = 1.0; );
 
 		fragV += STRINGIFY(
-				 gl_FragColor = sum;
+				 gl_FragColor = vec4(sum.r, sum.g, sum.b, sum.a);
+				//gl_FragColor = vec4(sum.a, sum.a, sum.a, 1.0);
 			 }
 		);
 
@@ -81,7 +81,8 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 		if(additive) fragH += STRINGIFY( if (sum.a > 0.0) sum.a = 1.0; );
 
 		fragH += STRINGIFY(
-					  gl_FragColor = sum;
+					  gl_FragColor = vec4(sum.r, sum.g, sum.b, sum.a);
+					  //gl_FragColor = vec4(sum.a, sum.a, sum.a, 1.0);
 				  }
 		);
 
@@ -157,11 +158,11 @@ void ofxFboBlur::drawBlurFbo(bool useCurrentColor){
 	}
 }
 
-void ofxFboBlur::setBackgroundColor(ofColor c){
-	backgroundColor = c;
-}
 
 void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * buffer2, int iterations, float blurOffset){
+
+	ofPushStyle();
+	ofDisableAlphaBlending();
 
 	if( iterations > 0 ){
 
@@ -169,15 +170,13 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 		ofShader * sh = additive ? &shaderHadd : &shaderH;
 
 		buffer->begin();
-		ofClear(backgroundColor);
 		buffer->end();
 
 		buffer2->begin();
-		ofClear(backgroundColor);
 		input->draw(0,0, buffer2->getWidth(), buffer2->getHeight());
 		buffer2->end();
 
-		ofEnableAlphaBlending();
+
 		for (int i = 0; i < iterations; i++) {
 
 			float blurLevel = blurOffset * (i + 1) / ( iterations * iterations + 1);
@@ -201,14 +200,13 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 		//draw back into original fbo
 
 		output->begin();
-		ofClear(backgroundColor);
 		buffer2->draw(0, 0);
 		output->end();
 
 	}else{
 		output->begin();
-		ofClear(backgroundColor);
 		input->draw(0,0, output->getWidth(), output->getHeight());
 		output->end();
 	}
+	ofPopStyle();
 }

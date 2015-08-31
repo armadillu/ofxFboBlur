@@ -17,8 +17,10 @@ class ofxFboBlur{
 public:
 
 	ofxFboBlur();
-	
-	void setup(ofFbo::Settings s, bool additive, float scaleDownPercent = 1.0f);
+
+	///additive == true > tweaks the shader to always return alpha solid values (0 or 255)
+	///so any alpha > 0 will be turned into 255.
+	void setup(ofFbo::Settings s, bool additive = false, float scaleDownPercent = 1.0f);
 	void beginDrawScene();
 
 	void endDrawScene();
@@ -27,8 +29,6 @@ public:
 
 	void drawSceneFBO();
 	void drawBlurFbo(bool useCurrentColor = false);
-
-	void setBackgroundColor(ofColor c);
 
 	//access directly please!
 	float blurOffset;
@@ -56,5 +56,4 @@ private:
 	static ofShader shaderVadd;
 	static ofShader shaderHadd;
 
-	ofColor backgroundColor;
 };
