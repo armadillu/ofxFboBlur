@@ -169,13 +169,9 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 		ofShader * sv = additive ? &shaderVadd : &shaderV;
 		ofShader * sh = additive ? &shaderHadd : &shaderH;
 
-		buffer->begin();
-		buffer->end();
-
 		buffer2->begin();
 		input->draw(0,0, buffer2->getWidth(), buffer2->getHeight());
 		buffer2->end();
-
 
 		for (int i = 0; i < iterations; i++) {
 
