@@ -148,6 +148,7 @@ void ofxFboBlur::drawSceneFBO(){
 }
 
 void ofxFboBlur::drawBlurFbo(bool useCurrentColor){
+	ofPushStyle();
 	if(!useCurrentColor) ofSetColor(blurOverlayGain);
 	for(int i = 0; i < numBlurOverlays; i++){
 		#if (OF_VERSION_MINOR >= 8)
@@ -156,6 +157,7 @@ void ofxFboBlur::drawBlurFbo(bool useCurrentColor){
 		blurOutputFBO.getTextureReference().draw(0, blurOutputFBO.getHeight(), blurOutputFBO.getWidth() / scaleDown, -blurOutputFBO.getHeight() / scaleDown);
 		#endif
 	}
+	ofPopStyle();
 }
 
 
