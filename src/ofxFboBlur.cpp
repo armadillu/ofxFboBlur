@@ -121,6 +121,10 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 	s.width *= scaleDown;
 	s.height *= scaleDown;
 
+  	if(s.textureTarget != GL_TEXTURE_RECTANGLE_ARB){
+		ofLogError("ofxFboBlur") << "ofFbo::Settings textureTarget must be set to GL_TEXTURE_RECTANGLE_ARB for the shaders to work!";
+	}
+
 	blurOutputFBO.allocate( s );
 	blurTempFBO.allocate( s );
 	blurTempFBO2.allocate( s );
