@@ -35,6 +35,7 @@ public:
 	int blurPasses;
 	int numBlurOverlays;	
 	int blurOverlayGain;	//[0..255]
+	float gain; //increases brightness / alpha!
 
 	ofFbo &getSceneFbo(){return cleanImgFBO;};
 	ofFbo &getBlurredSceneFbo(){return blurOutputFBO;};
@@ -42,9 +43,10 @@ public:
 private:
 
 	float scaleDown;
+
 	bool additive;
 
-	void blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * buffer2, int iterations, float blurOffset);
+	void blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * buffer2, int iterations, float blurOffset, float gain);
 
 	ofFbo	cleanImgFBO;
 	ofFbo	blurOutputFBO;

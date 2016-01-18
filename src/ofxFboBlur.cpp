@@ -19,6 +19,7 @@ ofxFboBlur::ofxFboBlur(){
 	blurPasses = 1;
 	numBlurOverlays = 1;
 	blurOverlayGain = 128;
+	gain = 1.0f;
 }
 
 void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent){
@@ -30,28 +31,29 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 		string fragV = "#extension GL_ARB_texture_rectangle : enable\n" + (string)
 		STRINGIFY(
 			 uniform float blurLevel;
-			 uniform sampler2DRect texture;
+			 uniform float gain;
+			 uniform sampler2DRect src;
 
 			 void main(void){
 
 				 float blurSize = blurLevel;
 				 vec4 sum = vec4(0.0);
 
-				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 4.0 * blurSize)) * 0.049049;
-				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 3.0 * blurSize)) * 0.0882;
-				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 2.0 * blurSize)) * 0.1176;
-				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - blurSize)) * 0.147;
-				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y)) * 0.196;
-				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + blurSize)) * 0.147;
-				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 2.0 * blurSize)) * 0.1176;
-				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 3.0 * blurSize)) * 0.0882;
-				 sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 4.0 * blurSize)) * 0.049049;
+				 sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 4.0 * blurSize)) * 0.049049;
+				 sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 3.0 * blurSize)) * 0.0882;
+				 sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 2.0 * blurSize)) * 0.1176;
+				 sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - blurSize)) * 0.147;
+				 sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y)) * 0.196;
+				 sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + blurSize)) * 0.147;
+				 sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 2.0 * blurSize)) * 0.1176;
+				 sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 3.0 * blurSize)) * 0.0882;
+				 sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 4.0 * blurSize)) * 0.049049;
 		);
 
 		if(additive) fragV += STRINGIFY( if (sum.a > 0.0) sum.a = 1.0; );
 
 		fragV += STRINGIFY(
-				 gl_FragColor = vec4(sum.r, sum.g, sum.b, sum.a);
+				 gl_FragColor = vec4(sum.r * gain, sum.g * gain, sum.b * gain, sum.a );
 				//gl_FragColor = vec4(sum.a, sum.a, sum.a, 1.0);
 			 }
 		);
@@ -59,29 +61,30 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 		string fragH = "#extension GL_ARB_texture_rectangle : enable\n" + (string)
 		STRINGIFY(
 				  uniform float blurLevel;
-				  uniform sampler2DRect texture;
+				  uniform float gain;
+				  uniform sampler2DRect src;
 
 				  void main(void){
 
 					  float blurSize = blurLevel;
 					  vec4 sum = vec4(0.0);
 
-					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x - 4.0 * blurSize, gl_TexCoord[0].y)) * 0.049049;
-					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x - 3.0 * blurSize, gl_TexCoord[0].y)) * 0.0882;
-					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x - 2.0 * blurSize, gl_TexCoord[0].y)) * 0.1176;
-					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x - blurSize, gl_TexCoord[0].y)) * 0.147;
-					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y)) * 0.196;
-					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x + blurSize, gl_TexCoord[0].y)) * 0.147;
-					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x + 2.0 * blurSize, gl_TexCoord[0].y)) * 0.1176;
-					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x + 3.0 * blurSize, gl_TexCoord[0].y)) * 0.0882;
-					  sum += texture2DRect(texture, vec2(gl_TexCoord[0].x + 4.0 * blurSize, gl_TexCoord[0].y)) * 0.049049;
+					  sum += texture2DRect(src, vec2(gl_TexCoord[0].x - 4.0 * blurSize, gl_TexCoord[0].y)) * 0.049049;
+					  sum += texture2DRect(src, vec2(gl_TexCoord[0].x - 3.0 * blurSize, gl_TexCoord[0].y)) * 0.0882;
+					  sum += texture2DRect(src, vec2(gl_TexCoord[0].x - 2.0 * blurSize, gl_TexCoord[0].y)) * 0.1176;
+					  sum += texture2DRect(src, vec2(gl_TexCoord[0].x - blurSize, gl_TexCoord[0].y)) * 0.147;
+					  sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y)) * 0.196;
+					  sum += texture2DRect(src, vec2(gl_TexCoord[0].x + blurSize, gl_TexCoord[0].y)) * 0.147;
+					  sum += texture2DRect(src, vec2(gl_TexCoord[0].x + 2.0 * blurSize, gl_TexCoord[0].y)) * 0.1176;
+					  sum += texture2DRect(src, vec2(gl_TexCoord[0].x + 3.0 * blurSize, gl_TexCoord[0].y)) * 0.0882;
+					  sum += texture2DRect(src, vec2(gl_TexCoord[0].x + 4.0 * blurSize, gl_TexCoord[0].y)) * 0.049049;
 					  
 					);
 
 		if(additive) fragH += STRINGIFY( if (sum.a > 0.0) sum.a = 1.0; );
 
 		fragH += STRINGIFY(
-					  gl_FragColor = vec4(sum.r, sum.g, sum.b, sum.a);
+					  gl_FragColor = vec4(sum.r * gain, sum.g * gain, sum.b * gain, sum.a );
 					  //gl_FragColor = vec4(sum.a, sum.a, sum.a, 1.0);
 				  }
 		);
@@ -140,7 +143,7 @@ void ofxFboBlur::endDrawScene(){
 }
 
 void ofxFboBlur::performBlur(){
-	blur(&cleanImgFBO, &blurOutputFBO, &blurTempFBO, &blurTempFBO2, blurPasses, blurOffset);
+	blur(&cleanImgFBO, &blurOutputFBO, &blurTempFBO, &blurTempFBO2, blurPasses, blurOffset, gain);
 }
 
 void ofxFboBlur::drawSceneFBO(){
@@ -165,7 +168,7 @@ void ofxFboBlur::drawBlurFbo(bool useCurrentColor){
 }
 
 
-void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * buffer2, int iterations, float blurOffset){
+void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * buffer2, int iterations, float blurOffset, float gain){
 
 	ofPushStyle();
 	ofDisableAlphaBlending();
@@ -185,21 +188,22 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 
 			buffer->begin();
 				sv->begin();
-				sv->setUniformTexture( "texture", input->getTextureReference(), 0 );
+				//sv->setUniformTexture( "texture", buffer2->getTextureReference(), 0 ); //wtf how does this work?
 				sv->setUniform1f("blurLevel", blurLevel);
+				sv->setUniform1f("gain", gain);
 				buffer2->draw(0,0);
 				sv->end();
 			buffer->end();
 
 			buffer2->begin();
 				sh->begin();
-				sh->setUniformTexture( "texture", buffer->getTextureReference(), 0 );
+				//sh->setUniformTexture( "texture", buffer->getTextureReference(), 0 ); //wtf how does this work?
 				sh->setUniform1f("blurLevel", blurLevel);
+				sh->setUniform1f("gain", gain);
 				buffer->draw(0,0);
 				sh->end();
 			buffer2->end();
 		}
-		//draw back into original fbo
 
 		output->begin();
 		buffer2->draw(0, 0);
