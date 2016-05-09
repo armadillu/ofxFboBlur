@@ -20,5 +20,5 @@ class testApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 		ofxFboBlur gpuBlur;
-	ofTexture tex;
+		ofTexture tex;
 };

@@ -40,7 +40,7 @@ public:
 	ofFbo &getSceneFbo(){return cleanImgFBO;};
 	ofFbo &getBlurredSceneFbo(){return blurOutputFBO;};
 
-private:
+//private:
 
 	float scaleDown;
 
