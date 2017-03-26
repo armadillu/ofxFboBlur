@@ -264,6 +264,7 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 
 	ofPushStyle();
 	ofDisableAlphaBlending();
+	ofDisableAntiAliasing();
 
 	if( iterations > 0 ){
 
@@ -306,5 +307,6 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 		input->draw(0,0, output->getWidth(), output->getHeight());
 		output->end();
 	}
+	ofEnableAntiAliasing();
 	ofPopStyle();
 }
