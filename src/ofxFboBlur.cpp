@@ -240,7 +240,7 @@ void ofxFboBlur::performBlur(){
 
 void ofxFboBlur::drawSceneFBO(){
 #if (OF_VERSION_MINOR >= 8)
-	cleanImgFBO.getTextureReference().draw(0, 0, cleanImgFBO.getWidth(), cleanImgFBO.getHeight());
+	cleanImgFBO.getTexture().draw(0, 0, cleanImgFBO.getWidth(), cleanImgFBO.getHeight());
 #else
 	cleanImgFBO.getTextureReference().draw(0, cleanImgFBO.getHeight(), cleanImgFBO.getWidth(), -cleanImgFBO.getHeight());
 #endif
@@ -251,7 +251,7 @@ void ofxFboBlur::drawBlurFbo(bool useCurrentColor){
 	if(!useCurrentColor) ofSetColor(blurOverlayGain);
 	for(int i = 0; i < numBlurOverlays; i++){
 		#if (OF_VERSION_MINOR >= 8)
-		blurOutputFBO.getTextureReference().draw(0, 0, blurOutputFBO.getWidth() / scaleDown, blurOutputFBO.getHeight() / scaleDown);
+		blurOutputFBO.getTexture().draw(0, 0, blurOutputFBO.getWidth() / scaleDown, blurOutputFBO.getHeight() / scaleDown);
 		#else
 		blurOutputFBO.getTextureReference().draw(0, blurOutputFBO.getHeight(), blurOutputFBO.getWidth() / scaleDown, -blurOutputFBO.getHeight() / scaleDown);
 		#endif
