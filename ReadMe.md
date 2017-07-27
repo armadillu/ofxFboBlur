@@ -1,4 +1,6 @@
-#ofxFboBlur
+# ofxFboBlur
+
+[![Build Status](https://travis-ci.org/armadillu/ofxFboBlur.svg?branch=master)](https://travis-ci.org/armadillu/ofxFboBlur)
 
 blur things easily! Render your scene into the ofxFboBlur object; it will keep your original scene, and a blurred copy of it. This way, you can draw your "clean" scene and overlay any amount of blur you want on top of it.
 
