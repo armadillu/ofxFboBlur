@@ -23,13 +23,12 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-	gpuBlur.blurOffset = 130 * ofMap(mouseY, 0, ofGetHeight(), 1, 0, true);
+	gpuBlur.blurOffset = 40 * ofMap(mouseY, 0, ofGetHeight(), 1, 0, true);
 	//gpuBlur.blurOffset = 15;
-	gpuBlur.blurPasses = 10 * ofMap(mouseX, 0, ofGetWidth(), 0, 1, true);
+	gpuBlur.blurPasses = 5 * ofMap(mouseX, 0, ofGetWidth(), 0, 1, true);
 	//gpuBlur.blurPasses = 1;
 	gpuBlur.numBlurOverlays = 1;
 	gpuBlur.blurOverlayGain = 255;
-
 }
 
 //--------------------------------------------------------------
