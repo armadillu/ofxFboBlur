@@ -24,6 +24,7 @@ ofxFboBlur::ofxFboBlur(){
 
 void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent){
 
+	#ifndef OPENGL_ES
 	scaleDown = scaleDownPercent;
 	this->additive = additive;
 
@@ -224,29 +225,42 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 	blurTempFBO.allocate( s );
 	blurTempFBO2.allocate( s );
 	ofSetLogLevel(l);
+
+	#else
+	ofLofError("ofxFboBlur") << "ofxFboBlur doesn't work on OpenGL ES";
+	#endif
 }
 
 void ofxFboBlur::beginDrawScene(){
+	#ifndef OPENGL_ES
 	cleanImgFBO.begin();
+	#endif
 }
 
 void ofxFboBlur::endDrawScene(){
+	#ifndef OPENGL_ES
 	cleanImgFBO.end();
+	#endif
 }
 
 void ofxFboBlur::performBlur(){
+	#ifndef OPENGL_ES
 	blur(&cleanImgFBO, &blurOutputFBO, &blurTempFBO, &blurTempFBO2, blurPasses, blurOffset, gain);
+	#endif
 }
 
 void ofxFboBlur::drawSceneFBO(){
-#if (OF_VERSION_MINOR >= 8)
+	#ifndef OPENGL_ES
+	#if (OF_VERSION_MINOR >= 8)
 	cleanImgFBO.getTexture().draw(0, 0, cleanImgFBO.getWidth(), cleanImgFBO.getHeight());
-#else
+	#else
 	cleanImgFBO.getTextureReference().draw(0, cleanImgFBO.getHeight(), cleanImgFBO.getWidth(), -cleanImgFBO.getHeight());
-#endif
+	#endif
+	#endif
 }
 
 void ofxFboBlur::drawBlurFbo(bool useCurrentColor){
+	#ifndef OPENGL_ES
 	ofPushStyle();
 	if(!useCurrentColor) ofSetColor(blurOverlayGain);
 	for(int i = 0; i < numBlurOverlays; i++){
@@ -257,11 +271,13 @@ void ofxFboBlur::drawBlurFbo(bool useCurrentColor){
 		#endif
 	}
 	ofPopStyle();
+	#endif
 }
 
 
 void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * buffer2, int iterations, float blurOffset, float gain){
 
+	#ifndef OPENGL_ES
 	ofPushStyle();
 	ofDisableAlphaBlending();
 	ofDisableAntiAliasing();
@@ -309,4 +325,5 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 	}
 	ofEnableAntiAliasing();
 	ofPopStyle();
+	#endif
 }
