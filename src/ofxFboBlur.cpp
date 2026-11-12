@@ -279,7 +279,10 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 
 	#ifndef TARGET_OPENGLES
 	ofPushStyle();
+	// Internal texture copies must not inherit the caller's drawing tint.
+	ofSetColor(255);
 	ofDisableAlphaBlending();
+	const GLboolean multisampleWasEnabled = glIsEnabled(GL_MULTISAMPLE);
 	ofDisableAntiAliasing();
 
 	if( iterations > 0 ){
@@ -304,26 +307,25 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 				sv->end();
 			buffer->end();
 
-			buffer2->begin();
+			// Write the final horizontal pass directly to the public output FBO.
+			// Earlier passes still ping-pong through buffer2.
+			ofFbo * destination = (i == iterations - 1) ? output : buffer2;
+			destination->begin();
 				sh->begin();
 				sh->setUniformTexture( "src", buffer->getTexture(), 0 );
 				sh->setUniform1f("blurLevel", blurLevel);
 				sh->setUniform1f("gain", gain);
-				buffer->draw(0,0, buffer2->getWidth(), buffer2->getHeight());
+				buffer->draw(0,0, destination->getWidth(), destination->getHeight());
 				sh->end();
-			buffer2->end();
+			destination->end();
 		}
-
-		output->begin();
-		buffer2->draw(0, 0);
-		output->end();
 
 	}else{
 		output->begin();
 		input->draw(0,0, output->getWidth(), output->getHeight());
 		output->end();
 	}
-	ofEnableAntiAliasing();
+	if (multisampleWasEnabled) ofEnableAntiAliasing();
 	ofPopStyle();
 	#endif
 }
