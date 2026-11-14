@@ -8,6 +8,7 @@
  */
 
 #include "ofxFboBlur.h"
+#include <cmath>
 
 ofShader ofxFboBlur::shaderV = ofShader();
 ofShader ofxFboBlur::shaderH = ofShader();
@@ -20,6 +21,8 @@ ofxFboBlur::ofxFboBlur(){
 	numBlurOverlays = 1;
 	blurOverlayGain = 128;
 	gain = 1.0f;
+	fastBloom = false;
+	singlePassBloom = false;
 }
 
 void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent){
@@ -27,6 +30,7 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 	#ifndef TARGET_OPENGLES
 	scaleDown = scaleDownPercent;
 	this->additive = additive;
+
 
 	if( (!shaderV.isLoaded() && !additive) || (additive && !shaderVadd.isLoaded()) ){
 
@@ -49,6 +53,7 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 			fragV = "#version 150\n" + (string)
 			STRINGIFY(
 					  uniform float blurLevel;\n
+					  uniform bool fastBloom;\n
 					  uniform float gain;\n
 					  uniform sampler2DRect src;\n
 					  out vec4 fragColor;\n
@@ -58,7 +63,14 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 						  float blurSize = blurLevel;\n
 						  vec4 sum = vec4(0.0);\n
 
-						  sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y - 4.0 * blurSize)) * 0.049049;\n
+						  if (fastBloom) {\n
+                          sum = texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y )) * 0.196;\n
+                          sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y - 1.444444 * blurSize)) * 0.2646;\n
+                          sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y + 1.444444 * blurSize)) * 0.2646;\n
+                          sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y - 3.35737 * blurSize)) * 0.137249;\n
+                          sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y + 3.35737 * blurSize)) * 0.137249;\n
+                      } else {\n
+                          sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y - 4.0 * blurSize)) * 0.049049;\n
 						  sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y - 3.0 * blurSize)) * 0.0882;\n
 						  sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y - 2.0 * blurSize)) * 0.1176;\n
 						  sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y - blurSize)) * 0.147;\n
@@ -67,6 +79,7 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 						  sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y + 2.0 * blurSize)) * 0.1176;\n
 						  sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y + 3.0 * blurSize)) * 0.0882;\n
 						  sum += texture(src, vec2(gl_FragCoord.x, gl_FragCoord.y + 4.0 * blurSize)) * 0.049049;\n
+                      }\n
 			);
 
 
@@ -78,6 +91,7 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 			fragH = "#version 150\n" + (string)
 			STRINGIFY(
 					uniform float blurLevel;\n
+					  uniform bool fastBloom;\n
 					uniform float gain;\n
 					uniform sampler2DRect src;\n
 					out vec4 fragColor;\n
@@ -87,7 +101,14 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 						float blurSize = blurLevel;\n
 						vec4 sum = vec4(0.0);\n
 
-						sum += texture(src, vec2(gl_FragCoord.x - 4.0 * blurSize, 	gl_FragCoord.y)) * 0.049049;\n
+						if (fastBloom) {\n
+                          sum = texture(src, vec2(gl_FragCoord.x , gl_FragCoord.y)) * 0.196;\n
+                          sum += texture(src, vec2(gl_FragCoord.x - 1.444444 * blurSize, gl_FragCoord.y)) * 0.2646;\n
+                          sum += texture(src, vec2(gl_FragCoord.x + 1.444444 * blurSize, gl_FragCoord.y)) * 0.2646;\n
+                          sum += texture(src, vec2(gl_FragCoord.x - 3.35737 * blurSize, gl_FragCoord.y)) * 0.137249;\n
+                          sum += texture(src, vec2(gl_FragCoord.x + 3.35737 * blurSize, gl_FragCoord.y)) * 0.137249;\n
+                      } else {\n
+                          sum += texture(src, vec2(gl_FragCoord.x - 4.0 * blurSize, 	gl_FragCoord.y)) * 0.049049;\n
 						sum += texture(src, vec2(gl_FragCoord.x - 3.0 * blurSize, 	gl_FragCoord.y)) * 0.0882;\n
 						sum += texture(src, vec2(gl_FragCoord.x - 2.0 * blurSize, 	gl_FragCoord.y)) * 0.1176;\n
 						sum += texture(src, vec2(gl_FragCoord.x - blurSize, 		gl_FragCoord.y)) * 0.147;\n
@@ -96,6 +117,7 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 						sum += texture(src, vec2(gl_FragCoord.x + 2.0 * blurSize, 	gl_FragCoord.y)) * 0.1176;\n
 						sum += texture(src, vec2(gl_FragCoord.x + 3.0 * blurSize, 	gl_FragCoord.y)) * 0.0882;\n
 						sum += texture(src, vec2(gl_FragCoord.x + 4.0 * blurSize, 	gl_FragCoord.y)) * 0.049049;\n
+                      }\n
 			);
 
 			if(additive) fragH += STRINGIFY( if (sum.a > 0.0) sum.a = 1.0;\n );
@@ -120,6 +142,7 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 			fragV = "#version 120\n#extension GL_ARB_texture_rectangle : enable\n" + (string)
 			STRINGIFY(
 					  uniform float blurLevel;
+					  uniform bool fastBloom;
 					  uniform float gain;
 					  uniform sampler2DRect src;
 
@@ -128,7 +151,21 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 						  float blurSize = blurLevel;
 						  vec4 sum = vec4(0.0);
 
-						  sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 4.0 * blurSize)) * 0.049049;
+						  if (fastBloom) {
+
+                          sum = texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y )) * 0.196;
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 1.444444 * blurSize)) * 0.2646;
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 1.444444 * blurSize)) * 0.2646;
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 3.35737 * blurSize)) * 0.137249;
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 3.35737 * blurSize)) * 0.137249;
+
+                      } else {
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 4.0 * blurSize)) * 0.049049;
 						  sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 3.0 * blurSize)) * 0.0882;
 						  sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - 2.0 * blurSize)) * 0.1176;
 						  sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y - blurSize)) * 0.147;
@@ -137,6 +174,8 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 						  sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 2.0 * blurSize)) * 0.1176;
 						  sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 3.0 * blurSize)) * 0.0882;
 						  sum += texture2DRect(src, vec2(gl_TexCoord[0].x, gl_TexCoord[0].y + 4.0 * blurSize)) * 0.049049;
+
+                      }
 						  );
 
 			if(additive) fragV += STRINGIFY( if (sum.a > 0.0) sum.a = 1.0; );
@@ -149,6 +188,7 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 			fragH = "#version 120\n#extension GL_ARB_texture_rectangle : enable\n" + (string)
 			STRINGIFY(
 					uniform float blurLevel;
+					  uniform bool fastBloom;
 					uniform float gain;
 					uniform sampler2DRect src;
 
@@ -157,7 +197,21 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 						float blurSize = blurLevel;
 						vec4 sum = vec4(0.0);
 
-						sum += texture2DRect(src, vec2(gl_TexCoord[0].x - 4.0 * blurSize, gl_TexCoord[0].y)) * 0.049049;
+						if (fastBloom) {
+
+                          sum = texture2DRect(src, vec2(gl_TexCoord[0].x , gl_TexCoord[0].y)) * 0.196;
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x - 1.444444 * blurSize, gl_TexCoord[0].y)) * 0.2646;
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x + 1.444444 * blurSize, gl_TexCoord[0].y)) * 0.2646;
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x - 3.35737 * blurSize, gl_TexCoord[0].y)) * 0.137249;
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x + 3.35737 * blurSize, gl_TexCoord[0].y)) * 0.137249;
+
+                      } else {
+
+                          sum += texture2DRect(src, vec2(gl_TexCoord[0].x - 4.0 * blurSize, gl_TexCoord[0].y)) * 0.049049;
 						sum += texture2DRect(src, vec2(gl_TexCoord[0].x - 3.0 * blurSize, gl_TexCoord[0].y)) * 0.0882;
 						sum += texture2DRect(src, vec2(gl_TexCoord[0].x - 2.0 * blurSize, gl_TexCoord[0].y)) * 0.1176;
 						sum += texture2DRect(src, vec2(gl_TexCoord[0].x - blurSize, gl_TexCoord[0].y)) * 0.147;
@@ -166,6 +220,8 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 						sum += texture2DRect(src, vec2(gl_TexCoord[0].x + 2.0 * blurSize, gl_TexCoord[0].y)) * 0.1176;
 						sum += texture2DRect(src, vec2(gl_TexCoord[0].x + 3.0 * blurSize, gl_TexCoord[0].y)) * 0.0882;
 						sum += texture2DRect(src, vec2(gl_TexCoord[0].x + 4.0 * blurSize, gl_TexCoord[0].y)) * 0.049049;
+
+                      }
 
 						);
 
@@ -209,10 +265,9 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 		}
 	}
 
-	ofLogLevel l = ofGetLogLevel();
-	ofSetLogLevel(OF_LOG_WARNING);
 
 	cleanImgFBO.allocate( s );
+	ofLogNotice("ofxFboBlur") << "ofxFboBlur allocating an fbo of size " << s.width << " x " << s.height;
 
 	s.width *= scaleDown;
 	s.height *= scaleDown;
@@ -221,10 +276,11 @@ void ofxFboBlur::setup(ofFbo::Settings s, bool additive, float scaleDownPercent)
 		ofLogError("ofxFboBlur") << "ofFbo::Settings textureTarget must be set to GL_TEXTURE_RECTANGLE_ARB for the shaders to work!";
 	}
 
+	ofLogNotice("ofxFboBlur") << "ofxFboBlur allocating 3 x fbos of size " << s.width << " x " << s.height;
+
 	blurOutputFBO.allocate( s );
 	blurTempFBO.allocate( s );
 	blurTempFBO2.allocate( s );
-	ofSetLogLevel(l);
 
 	#else
 	ofLogError("ofxFboBlur") << "ofxFboBlur doesn't work on OpenGL ES";
@@ -245,7 +301,18 @@ void ofxFboBlur::endDrawScene(){
 
 void ofxFboBlur::performBlur(){
 	#ifndef TARGET_OPENGLES
-	blur(&cleanImgFBO, &blurOutputFBO, &blurTempFBO, &blurTempFBO2, blurPasses, blurOffset, gain);
+	int passes = blurPasses;
+	float offset = blurOffset;
+	float passGain = gain;
+	if(singlePassBloom && passes > 1){
+		// Match the approximate spread and total gain of the repeated passes.
+		const float n = static_cast<float>(passes);
+		const float spread = std::sqrt(n * (n + 1.0f) * (2.0f * n + 1.0f) / 6.0f);
+		offset = 2.0f * blurOffset * spread / (n * n + 1.0f);
+		passGain = std::pow(gain, n);
+		passes = 1;
+	}
+	blur(&cleanImgFBO, &blurOutputFBO, &blurTempFBO, &blurTempFBO2, passes, offset, passGain);
 	#endif
 }
 
@@ -303,6 +370,7 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 				sv->setUniformTexture("src", buffer2->getTexture(), 0 );
 				sv->setUniform1f("blurLevel", blurLevel);
 				sv->setUniform1f("gain", gain);
+				sv->setUniform1i("fastBloom", fastBloom);
 				buffer2->draw(0,0, buffer->getWidth(), buffer->getHeight());
 				sv->end();
 			buffer->end();
@@ -315,6 +383,7 @@ void ofxFboBlur::blur( ofFbo * input, ofFbo * output, ofFbo * buffer, ofFbo * bu
 				sh->setUniformTexture( "src", buffer->getTexture(), 0 );
 				sh->setUniform1f("blurLevel", blurLevel);
 				sh->setUniform1f("gain", gain);
+				sh->setUniform1i("fastBloom", fastBloom);
 				buffer->draw(0,0, destination->getWidth(), destination->getHeight());
 				sh->end();
 			destination->end();

@@ -31,6 +31,8 @@ public:
 	void drawBlurFbo(bool useCurrentColor = false);
 
 	//access directly please!
+	bool fastBloom; // five-sample approximation, useful for bloom
+	bool singlePassBloom; // approximate repeated blur with one horizontal/vertical pair
 	float blurOffset;
 	int blurPasses;
 	int numBlurOverlays;	
